@@ -1,5 +1,7 @@
 # Painel SINAN: Agravos Relacionados ao Trabalho – Anápolis-GO
 
+![alt text](image.png)
+
 **Observatório Epidemiológico e Análise de Subnotificação (2020–2024)**
 
 Este projeto é um painel interativo de visualização de dados epidemiológicos focado nos agravos à saúde relacionados ao trabalho no município de Anápolis, Goiás. Desenvolvido como parte do **Projeto de Saúde Coletiva (PSC)** do curso de Medicina da **UniEVANGÉLICA**, a ferramenta visa dar visibilidade aos dados do SINAN (Sistema de Informação de Agravos de Notificação) e evidenciar o impacto da subnotificação na vigilância em saúde do trabalhador.
