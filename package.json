@@ -1,0 +1,17 @@
+{
+  "name": "painel-agravos-anapolis",
+  "version": "1.0.0",
+  "description": "Observatório epidemiológico para Anápolis-GO — Dados de notificação compulsória 2020–2024",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.1"
+  }
+}

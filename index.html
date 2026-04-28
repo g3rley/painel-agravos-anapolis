@@ -1,1477 +1,865 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel SINAN – Agravos Relacionados ao Trabalho · Anápolis-GO</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-  :root {
-    --black: #000000;
-    --white: #ffffff;
-    --gray-50: #F8F8F6;
-    --gray-100: #EFEFEC;
-    --gray-200: #DEDEDB;
-    --gray-400: #ABABAB;
-    --gray-600: #6B6B68;
-    --gray-800: #2C2C2A;
-    --accent-green: #1A7A4A;
-    --accent-green-light: #EAF5EE;
-    --accent-amber: #B86B0D;
-    --accent-amber-light: #FEF3E2;
-    --accent-red: #C23B3B;
-    --accent-red-light: #FDEAEA;
-    --accent-blue: #1B5EA8;
-    --accent-blue-light: #E8F0FB;
-    --accent-purple: #5241B0;
-    --accent-purple-light: #EEEDFB;
-    --accent-teal: #0F7360;
-    --accent-teal-light: #E2F5F0;
-    --font-sans: 'DM Sans', system-ui, sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 16px;
-    --radius-pill: 50px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--font-sans);
-    background: var(--gray-50);
-    color: var(--black);
-    font-size: 15px;
-    line-height: 1.5;
-    letter-spacing: -0.12px;
-  }
-
-  /* HERO HEADER */
-  .hero {
-    background: var(--black);
-    color: var(--white);
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-gradient {
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg,
-      rgba(26,122,74,0.85) 0%,
-      rgba(27,94,168,0.7) 30%,
-      rgba(82,65,176,0.8) 60%,
-      rgba(194,59,59,0.6) 100%);
-    z-index: 1;
-  }
-  .hero-inner {
-    position: relative; z-index: 2;
-    max-width: 1280px; margin: 0 auto;
-    padding: 56px 40px 48px;
-  }
-  .hero-mono-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-    margin-bottom: 16px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .hero-mono-label::before {
-    content: '';
-    display: inline-block; width: 24px; height: 1px;
-    background: rgba(255,255,255,0.4);
-  }
-  .hero-title {
-    font-size: clamp(32px, 5vw, 64px);
-    font-weight: 300;
-    line-height: 1.05;
-    letter-spacing: -1.2px;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-  .hero-title strong { font-weight: 700; }
-  .hero-subtitle {
-    font-size: 16px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.65);
-    letter-spacing: -0.1px;
-    margin-bottom: 32px;
-    max-width: 640px;
-  }
-  .hero-meta {
-    display: flex; flex-wrap: wrap; gap: 24px;
-    border-top: 1px solid rgba(255,255,255,0.15);
-    padding-top: 24px;
-  }
-  .hero-meta-item { font-size: 12px; color: rgba(255,255,255,0.5); }
-  .hero-meta-item strong { color: var(--white); font-weight: 500; display: block; margin-bottom: 2px; }
-
-  /* NAV TABS */
-  .nav-wrap {
-    background: var(--white);
-    border-bottom: 1px solid var(--gray-200);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .nav-inner {
-    max-width: 1280px; margin: 0 auto;
-    padding: 0 40px;
-    display: flex; gap: 4px; overflow-x: auto;
-  }
-  .nav-tab {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: -0.1px;
-    color: var(--gray-600);
-    background: none;
-    border: none;
-    padding: 14px 16px;
-    cursor: pointer;
-    white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .nav-tab:hover { color: var(--black); }
-  .nav-tab.active {
-    color: var(--black);
-    font-weight: 500;
-    border-bottom-color: var(--black);
-  }
-
-  /* MAIN LAYOUT */
-  .main { max-width: 1280px; margin: 0 auto; padding: 32px 40px 80px; }
-  .section { display: none; }
-  .section.active { display: block; }
-
-  /* SUMMARY CARDS */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 12px; margin-bottom: 32px;
-  }
-  .kpi-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    position: relative; overflow: hidden;
-  }
-  .kpi-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0;
-    width: 4px; height: 100%;
-    background: var(--accent-color, var(--black));
-  }
-  .kpi-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--gray-600);
-    margin-bottom: 8px;
-  }
-  .kpi-value {
-    font-size: 32px;
-    font-weight: 300;
-    letter-spacing: -1px;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .kpi-sub { font-size: 12px; color: var(--gray-600); letter-spacing: -0.05px; }
-  .kpi-trend { font-size: 12px; font-weight: 500; }
-  .kpi-trend.up { color: var(--accent-red); }
-  .kpi-trend.down { color: var(--accent-green); }
-
-  /* CHART CARDS */
-  .chart-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-    gap: 16px; margin-bottom: 16px;
-  }
-  .chart-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 16px; margin-bottom: 16px;
-  }
-  .chart-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-  }
-  .chart-card-wide {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    margin-bottom: 16px;
-  }
-  .chart-header { margin-bottom: 20px; }
-  .chart-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--gray-400);
-    margin-bottom: 4px;
-  }
-  .chart-title { font-size: 16px; font-weight: 500; letter-spacing: -0.2px; }
-  .chart-desc { font-size: 12px; color: var(--gray-600); margin-top: 2px; }
-  .chart-wrap { position: relative; width: 100%; }
-  .h200 { height: 200px; }
-  .h240 { height: 240px; }
-  .h300 { height: 300px; }
-  .h320 { height: 320px; }
-  .h360 { height: 360px; }
-  .h400 { height: 400px; }
-  .h500 { height: 500px; }
-
-  /* LEGEND */
-  .legend {
-    display: flex; flex-wrap: wrap; gap: 12px;
-    margin-top: 12px; font-size: 12px;
-    color: var(--gray-600);
-  }
-  .legend-item { display: flex; align-items: center; gap: 5px; }
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 2px; flex-shrink: 0;
-  }
-
-  /* SECTION TITLES */
-  .section-head { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200); }
-  .section-mono {
-    font-family: var(--font-mono);
-    font-size: 11px; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--gray-400);
-    margin-bottom: 6px;
-  }
-  .section-title { font-size: 24px; font-weight: 300; letter-spacing: -0.5px; }
-  .section-title strong { font-weight: 700; }
-
-  /* ABOUT SECTION */
-  .about-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-  .about-card {
-    background: var(--white); border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg); padding: 28px;
-  }
-  .about-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
-  .about-card p { font-size: 13px; color: var(--gray-600); line-height: 1.7; margin-bottom: 10px; }
-  .team-list { list-style: none; }
-  .team-list li {
-    font-size: 13px; padding: 8px 0;
-    border-bottom: 1px solid var(--gray-100);
-    color: var(--gray-800);
-    display: flex; align-items: baseline; gap: 8px;
-  }
-  .team-list li:last-child { border-bottom: none; }
-  .team-role { font-size: 10px; font-family: var(--font-mono); letter-spacing: 0.5px; text-transform: uppercase; color: var(--gray-400); }
-
-  /* PILLS */
-  .pill {
-    display: inline-block; padding: 3px 10px;
-    border-radius: var(--radius-pill);
-    font-size: 11px; font-weight: 500;
-    letter-spacing: 0.1px;
-  }
-  .pill-black { background: var(--black); color: var(--white); }
-  .pill-outline { background: transparent; border: 1px solid var(--gray-300); color: var(--gray-600); }
-
-  /* FOOTER */
-  footer {
-    background: var(--black); color: rgba(255,255,255,0.4);
-    text-align: center; padding: 32px 40px;
-    font-size: 12px; letter-spacing: 0.1px;
-    font-family: var(--font-mono);
-  }
-  footer strong { color: rgba(255,255,255,0.7); }
-
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    .hero-inner { padding: 36px 20px 32px; }
-    .nav-inner { padding: 0 16px; }
-    .main { padding: 24px 16px 60px; }
-    .chart-grid-2 { grid-template-columns: 1fr; }
-    .chart-grid-3 { grid-template-columns: 1fr; }
-    .about-grid { grid-template-columns: 1fr; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-</style>
-</head>
-<body>
-
-<!-- HERO -->
-<header class="hero">
-  <div class="hero-gradient"></div>
-  <div class="hero-inner">
-    <p class="hero-mono-label">SINAN · DATASUS · Vigilância em Saúde do Trabalhador</p>
-    <h1 class="hero-title">Painel de <strong>Agravos</strong><br>Relacionados ao Trabalho<br><strong>e Subnotificação</strong> no SINAN</h1>
-    <p class="hero-subtitle">Observatório epidemiológico para Anápolis-GO — Dados de notificação compulsória 2020–2024</p>
-    <div class="hero-meta">
-      <div class="hero-meta-item"><strong>Município</strong>Anápolis, Goiás – Brasil</div>
-      <div class="hero-meta-item"><strong>Período</strong>2020 · 2021 · 2022 · 2023 · 2024</div>
-      <div class="hero-meta-item"><strong>Fonte</strong>SINAN / DATASUS / CEREST Regional Pirineus</div>
-      <div class="hero-meta-item"><strong>Instituição</strong>UniEVANGÉLICA – Medicina M2, 6º período</div>
-      <div class="hero-meta-item"><strong>Evento</strong>07 mai 2026 · Auditório SESI Anápolis</div>
-    </div>
-  </div>
-</header>
-
-<!-- NAV -->
-<nav class="nav-wrap">
-  <div class="nav-inner">
-    <button class="nav-tab active" onclick="showSection('visao-geral')">Visão Geral</button>
-    <button class="nav-tab" onclick="showSection('lerdort')">LER/DORT & Dermatoses</button>
-    <button class="nav-tab" onclick="showSection('acidentes')">Acidentes de Trabalho</button>
-    <button class="nav-tab" onclick="showSection('biologico')">Biológico & Câncer</button>
-    <button class="nav-tab" onclick="showSection('auditiva')">Auditiva & Intoxicação</button>
-    <button class="nav-tab" onclick="showSection('mental')">Transtornos Mentais</button>
-    <button class="nav-tab" onclick="showSection('pneumo')">Pneumoconioses</button>
-    <button class="nav-tab" onclick="showSection('sobre')">Sobre o Projeto</button>
-  </div>
-</nav>
-
-<main class="main">
-
-<!-- ══════════════════════════════════════════════════
-     VISÃO GERAL
-════════════════════════════════════════════════════ -->
-<section id="visao-geral" class="section active">
-  <div class="section-head">
-    <p class="section-mono">Panorama · 2020–2024</p>
-    <h2 class="section-title"><strong>Visão Geral</strong> dos Agravos Notificados</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#1A7A4A">
-      <p class="kpi-label">Total notificado</p>
-      <p class="kpi-value">4.287</p>
-      <p class="kpi-sub">Casos 2020–2024</p>
-      <p class="kpi-trend up">+18% vs período anterior</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#1B5EA8">
-      <p class="kpi-label">Acidente Trabalho</p>
-      <p class="kpi-value">1.643</p>
-      <p class="kpi-sub">Agravo mais frequente</p>
-      <p class="kpi-trend up">38,3% do total</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#B86B0D">
-      <p class="kpi-label">LER / DORT</p>
-      <p class="kpi-value">812</p>
-      <p class="kpi-sub">2º agravo mais notif.</p>
-      <p class="kpi-trend up">+22% em 5 anos</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#5241B0">
-      <p class="kpi-label">Intoxicação Exógena</p>
-      <p class="kpi-value">634</p>
-      <p class="kpi-sub">Significativa subnotif.</p>
-      <p class="kpi-trend up">Tendência crescente</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Transtornos Mentais</p>
-      <p class="kpi-value">398</p>
-      <p class="kpi-sub">Alta subnotificação</p>
-      <p class="kpi-trend up">+41% desde 2020</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#0F7360">
-      <p class="kpi-label">Taxa subnotif. estimada</p>
-      <p class="kpi-value">~67%</p>
-      <p class="kpi-sub">Casos não registrados</p>
-      <p class="kpi-trend down">Meta OMS: &lt;30%</p>
-    </div>
-  </div>
-
-  <!-- Linha temporal geral -->
-  <div class="chart-card-wide">
-    <div class="chart-header">
-      <p class="chart-label">Série Histórica</p>
-      <p class="chart-title">Total de notificações por agravo (2020–2024)</p>
-      <p class="chart-desc">Evolução anual dos principais agravos relacionados ao trabalho notificados no SINAN em Anápolis-GO</p>
-    </div>
-    <div class="chart-wrap h300"><canvas id="lineGeral" role="img" aria-label="Gráfico de linha com evolução das notificações por agravo de 2020 a 2024">Dados de notificações anuais SINAN Anápolis 2020-2024.</canvas></div>
-    <div class="legend" id="legendLineGeral"></div>
-  </div>
-
-  <div class="chart-grid-2">
-    <!-- Distribuição por agravo -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Composição</p>
-        <p class="chart-title">Distribuição por tipo de agravo</p>
-        <p class="chart-desc">Proporção acumulada 2020–2024</p>
-      </div>
-      <div class="chart-wrap h300"><canvas id="pieAgravos" role="img" aria-label="Gráfico de pizza com distribuição dos tipos de agravos">LER/DORT, Acidentes, Biológico, Auditiva, Intoxicação, Mental, Pneumoconiose, Dermatose, Câncer.</canvas></div>
-      <div class="legend" id="legendPie"></div>
-    </div>
-
-    <!-- Pirâmide etária geral -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Demografico</p>
-        <p class="chart-title">Distribuição por sexo e faixa etária</p>
-        <p class="chart-desc">Pirâmide epidemiológica – total de casos</p>
-      </div>
-      <div class="chart-wrap h300"><canvas id="piramide" role="img" aria-label="Pirâmide etária com distribuição por sexo e idade">Faixas etárias de 18-24 até 65+ anos, divididas por masculino e feminino.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#1B5EA8"></span>Masculino</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#C23B3B"></span>Feminino</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <!-- Radar geral -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Perfil comparativo</p>
-        <p class="chart-title">Radar: agravos por sexo (média anual)</p>
-        <p class="chart-desc">Intensidade relativa de cada agravo por gênero</p>
-      </div>
-      <div class="chart-wrap h300"><canvas id="radarSexo" role="img" aria-label="Gráfico radar comparando agravos por sexo">Comparação de agravos entre masculino e feminino por categoria.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(27,94,168,0.6)"></span>Masculino</span>
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(194,59,59,0.6)"></span>Feminino</span>
-      </div>
-    </div>
-
-    <!-- Barras por setor -->
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Setor econômico</p>
-        <p class="chart-title">Notificações por setor produtivo</p>
-        <p class="chart-desc">Total acumulado 2020–2024, Anápolis-GO</p>
-      </div>
-      <div class="chart-wrap h300"><canvas id="barSetor" role="img" aria-label="Gráfico de barras com notificações por setor econômico">Setores: Indústria, Saúde, Comércio, Agropecuária, Construção, Transporte, Serviços.</canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     LER/DORT & DERMATOSES
-════════════════════════════════════════════════════ -->
-<section id="lerdort" class="section">
-  <div class="section-head">
-    <p class="section-mono">Análise Específica</p>
-    <h2 class="section-title"><strong>LER/DORT</strong> e Dermatoses Ocupacionais</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#B86B0D">
-      <p class="kpi-label">LER/DORT total</p><p class="kpi-value">812</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">+22% no período</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#0F7360">
-      <p class="kpi-label">Dermatoses total</p><p class="kpi-value">187</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Crescimento estável</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#5241B0">
-      <p class="kpi-label">Pico feminino – LER</p><p class="kpi-value">68%</p>
-      <p class="kpi-sub">Casos em mulheres</p><p class="kpi-trend up">Setor terciário</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Faixa de risco</p><p class="kpi-value">30–44</p>
-      <p class="kpi-sub">Anos – faixa predominante</p><p class="kpi-trend up">52% dos casos</p>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Série histórica</p>
-        <p class="chart-title">LER/DORT por ano e sexo</p>
-        <p class="chart-desc">Evolução 2020–2024 com estratificação por sexo</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barLerSexo" role="img" aria-label="Barras agrupadas LER/DORT por sexo e ano">LER/DORT masculino e feminino de 2020 a 2024.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#1B5EA8"></span>Masculino</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#C23B3B"></span>Feminino</span>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Área acumulada</p>
-        <p class="chart-title">LER vs. Dermatoses – tendência</p>
-        <p class="chart-desc">Comparativo em área empilhada 2020–2024</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="areaLerDerm" role="img" aria-label="Área empilhada LER/DORT e Dermatoses">Área empilhada comparativa dos dois agravos.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(184,107,13,0.6)"></span>LER/DORT</span>
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(15,115,96,0.6)"></span>Dermatoses</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="chart-grid-3">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Faixa etária</p>
-        <p class="chart-title">LER/DORT por idade</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="barLerIdade" role="img" aria-label="LER/DORT por faixa etária">LER/DORT distribuído por faixa etária.</canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Tipo de lesão</p>
-        <p class="chart-title">Diagnósticos LER mais frequentes</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="pieLer" role="img" aria-label="Tipos de LER/DORT mais frequentes">Tendinite, DORT, Síndrome do túnel do carpo, Bursite, Cervicalgia.</canvas></div>
-      <div class="legend" id="legendLerPie"></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Setor de trabalho</p>
-        <p class="chart-title">LER/DORT por atividade econômica</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="barLerSetor" role="img" aria-label="LER/DORT por setor econômico">Setores com mais LER/DORT.</canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     ACIDENTES DE TRABALHO
-════════════════════════════════════════════════════ -->
-<section id="acidentes" class="section">
-  <div class="section-head">
-    <p class="section-mono">Análise Específica</p>
-    <h2 class="section-title"><strong>Acidentes de Trabalho</strong> e Acidentes por Animais Peçonhentos</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#1B5EA8">
-      <p class="kpi-label">Acid. Trabalho grave</p><p class="kpi-value">1.643</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Mais notificado</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Animais peçonhentos</p><p class="kpi-value">204</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">+15% em 2023/24</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#B86B0D">
-      <p class="kpi-label">Masculino</p><p class="kpi-value">78%</p>
-      <p class="kpi-sub">Acidentes graves</p><p class="kpi-trend up">Indústria e construção</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#1A7A4A">
-      <p class="kpi-label">Pico etário</p><p class="kpi-value">25–34</p>
-      <p class="kpi-sub">Anos – maior incidência</p><p class="kpi-trend up">39% dos casos</p>
-    </div>
-  </div>
-
-  <div class="chart-card-wide">
-    <div class="chart-header">
-      <p class="chart-label">Evolução temporal</p>
-      <p class="chart-title">Acidentes de trabalho grave por mês – 2022–2024</p>
-      <p class="chart-desc">Sazonalidade das notificações com linha de tendência</p>
-    </div>
-    <div class="chart-wrap h280"><canvas id="lineMensal" role="img" aria-label="Acidentes mensais 2022 a 2024">Série mensal de acidentes de trabalho com tendência.</canvas></div>
-    <div class="legend">
-      <span class="legend-item"><span class="legend-dot" style="background:#1B5EA8"></span>Acidente Trabalho</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#C23B3B"></span>Animais Peçonhentos</span>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Comparativo</p>
-        <p class="chart-title">Acidentes por tipo e sexo</p>
-        <p class="chart-desc">Distribuição por categoria e gênero</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barAcidSexo" role="img" aria-label="Acidentes por tipo e sexo">Tipo de acidente separado por masculino e feminino.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#1B5EA8"></span>Masculino</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#C23B3B"></span>Feminino</span>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Setor</p>
-        <p class="chart-title">Acidentes graves por setor – 2024</p>
-        <p class="chart-desc">Distribuição setorial dos acidentes de trabalho</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="pieAcidSetor" role="img" aria-label="Pizza acidentes por setor 2024">Acidentes por setor econômico em 2024.</canvas></div>
-      <div class="legend" id="legendAcidPie"></div>
-    </div>
-  </div>
-
-  <div class="chart-grid-3">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Parte do corpo</p>
-        <p class="chart-title">Lesões mais frequentes</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="barParteCorpo" role="img" aria-label="Partes do corpo mais afetadas em acidentes">Mãos, pés, cabeça, coluna, membros inferiores.</canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Animais</p>
-        <p class="chart-title">Acidentes por tipo de animal</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="pieAnimal" role="img" aria-label="Tipos de animais peçonhentos envolvidos">Serpentes, escorpiões, aranhas, abelhas, outros.</canvas></div>
-      <div class="legend" id="legendAnimalPie"></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Evolução</p>
-        <p class="chart-title">Tendência anual comparativa</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="lineAcidTend" role="img" aria-label="Tendência anual acidentes vs animais">Linha de tendência dos dois tipos de acidentes.</canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     BIOLÓGICO & CÂNCER
-════════════════════════════════════════════════════ -->
-<section id="biologico" class="section">
-  <div class="section-head">
-    <p class="section-mono">Análise Específica</p>
-    <h2 class="section-title"><strong>Acidente com Material Biológico</strong> e Câncer Relacionado ao Trabalho</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#5241B0">
-      <p class="kpi-label">Mat. biológico total</p><p class="kpi-value">389</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Setor saúde: 84%</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Câncer ocup. total</p><p class="kpi-value">62</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Alta subnotificação</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#1A7A4A">
-      <p class="kpi-label">Feminino – biológico</p><p class="kpi-value">71%</p>
-      <p class="kpi-sub">Predominância feminina</p><p class="kpi-trend up">Enfermagem 58%</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#B86B0D">
-      <p class="kpi-label">COVID-19 (2020-21)</p><p class="kpi-value">+143%</p>
-      <p class="kpi-sub">Pico notificações mat. biol.</p><p class="kpi-trend up">Pandemia</p>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Série histórica</p>
-        <p class="chart-title">Acidente biológico por ano e sexo</p>
-        <p class="chart-desc">Evolução temporal com estratificação por gênero</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barBioSexo" role="img" aria-label="Acidente biológico por sexo e ano">Acidente biológico masculino e feminino anualmente.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#1B5EA8"></span>Masculino</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#C23B3B"></span>Feminino</span>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Tipo de exposição</p>
-        <p class="chart-title">Material biológico por tipo</p>
-        <p class="chart-desc">Categorização dos acidentes biológicos registrados</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="pieExposicao" role="img" aria-label="Tipos de exposição a material biológico">Pérfuro-cortante, respingos, mordedura, outros.</canvas></div>
-      <div class="legend" id="legendBioPie"></div>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Profissão</p>
-        <p class="chart-title">Categorias profissionais – biológico</p>
-        <p class="chart-desc">Profissões com maior exposição notificada</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barBioProfissao" role="img" aria-label="Acidentes biológicos por profissão">Enfermagem, médico, auxiliar, dentista, limpeza, outros.</canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Câncer Ocupacional</p>
-        <p class="chart-title">Câncer relacionado ao trabalho por tipo</p>
-        <p class="chart-desc">Distribuição dos cânceres notificados 2020–2024</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barCancer" role="img" aria-label="Tipos de câncer ocupacional">Pulmão, pele, bexiga, leucemia, outros.</canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     AUDITIVA & INTOXICAÇÃO
-════════════════════════════════════════════════════ -->
-<section id="auditiva" class="section">
-  <div class="section-head">
-    <p class="section-mono">Análise Específica</p>
-    <h2 class="section-title"><strong>Perda Auditiva</strong> e Intoxicação Exógena</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#0F7360">
-      <p class="kpi-label">PAIR total</p><p class="kpi-value">276</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Industrial 89%</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#5241B0">
-      <p class="kpi-label">Intoxicação total</p><p class="kpi-value">634</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Agrotóxicos 44%</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#1B5EA8">
-      <p class="kpi-label">PAIR masculino</p><p class="kpi-value">83%</p>
-      <p class="kpi-sub">Predominância masculina</p><p class="kpi-trend up">Metalurgia e ind.</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Intox. faixa risco</p><p class="kpi-value">18–39</p>
-      <p class="kpi-sub">Anos – maior incidência</p><p class="kpi-trend up">61% dos casos</p>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Comparativo</p>
-        <p class="chart-title">PAIR vs. Intoxicação – área empilhada</p>
-        <p class="chart-desc">Volume de notificações anuais comparado</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="areaAudInt" role="img" aria-label="Área PAIR e intoxicação por ano">Área empilhada PAIR e intoxicação.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(15,115,96,0.7)"></span>PAIR</span>
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(82,65,176,0.7)"></span>Intoxicação</span>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Agentes</p>
-        <p class="chart-title">Intoxicação por agente causador</p>
-        <p class="chart-desc">Distribuição dos agentes nas notificações</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="pieIntoxAgente" role="img" aria-label="Agentes causadores de intoxicação">Agrotóxico, medicamento, produto domissanitário, metal, outros.</canvas></div>
-      <div class="legend" id="legendIntoxPie"></div>
-    </div>
-  </div>
-
-  <div class="chart-grid-3">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Faixa etária</p>
-        <p class="chart-title">PAIR por idade e sexo</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="barPairIdade" role="img" aria-label="PAIR por faixa etária e sexo">PAIR por faixa etária separado por sexo.</canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Setor</p>
-        <p class="chart-title">PAIR por setor industrial</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="barPairSetor" role="img" aria-label="PAIR por setor industrial">Setores industriais com PAIR.</canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Gravidade</p>
-        <p class="chart-title">Intoxicação por grau de severidade</p>
-      </div>
-      <div class="chart-wrap h220"><canvas id="barIntoxGrav" role="img" aria-label="Intoxicação por grau de severidade">Leve, moderada, grave, óbito.</canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     TRANSTORNOS MENTAIS
-════════════════════════════════════════════════════ -->
-<section id="mental" class="section">
-  <div class="section-head">
-    <p class="section-mono">Análise Específica</p>
-    <h2 class="section-title"><strong>Transtornos Mentais</strong> Relacionados ao Trabalho</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Total notificado</p><p class="kpi-value">398</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">+41% no período</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#5241B0">
-      <p class="kpi-label">Burnout + Depressão</p><p class="kpi-value">61%</p>
-      <p class="kpi-sub">Do total de casos</p><p class="kpi-trend up">Diagnósticos mais freq.</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#B86B0D">
-      <p class="kpi-label">Feminino</p><p class="kpi-value">58%</p>
-      <p class="kpi-sub">Predominância feminina</p><p class="kpi-trend up">Setor serviços</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#1A7A4A">
-      <p class="kpi-label">Estimativa real</p><p class="kpi-value">~3×</p>
-      <p class="kpi-sub">Casos não notificados</p><p class="kpi-trend up">Alta subnotificação</p>
-    </div>
-  </div>
-
-  <div class="chart-card-wide">
-    <div class="chart-header">
-      <p class="chart-label">Crescimento acelerado</p>
-      <p class="chart-title">Transtornos mentais: evolução 2020–2024 por diagnóstico</p>
-      <p class="chart-desc">Impacto da pandemia e aumento da vigilância</p>
-    </div>
-    <div class="chart-wrap h300"><canvas id="barMentalDiag" role="img" aria-label="Transtornos mentais por diagnóstico e ano">Burnout, depressão, ansiedade, PTSD, outros por ano.</canvas></div>
-    <div class="legend" id="legendMentalDiag"></div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Demografico</p>
-        <p class="chart-title">Transtornos mentais por faixa etária e sexo</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barMentalIdade" role="img" aria-label="Transtornos mentais por idade e sexo">Por faixa etária separado por sexo.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#1B5EA8"></span>Masculino</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#C23B3B"></span>Feminino</span>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Setor</p>
-        <p class="chart-title">Transtornos mentais por setor de trabalho</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barMentalSetor" role="img" aria-label="Transtornos mentais por setor">Por setor econômico.</canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     PNEUMOCONIOSES
-════════════════════════════════════════════════════ -->
-<section id="pneumo" class="section">
-  <div class="section-head">
-    <p class="section-mono">Análise Específica</p>
-    <h2 class="section-title"><strong>Pneumoconioses</strong> Relacionadas ao Trabalho</h2>
-  </div>
-
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--accent-color:#6B6B68">
-      <p class="kpi-label">Total notificado</p><p class="kpi-value">82</p>
-      <p class="kpi-sub">2020–2024</p><p class="kpi-trend up">Subnotif. estimada 80%</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#1B5EA8">
-      <p class="kpi-label">Silicose</p><p class="kpi-value">61%</p>
-      <p class="kpi-sub">Tipo mais notificado</p><p class="kpi-trend up">Mineração e construção</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#B86B0D">
-      <p class="kpi-label">Masculino</p><p class="kpi-value">96%</p>
-      <p class="kpi-sub">Quase exclusivo homens</p><p class="kpi-trend up">Perfil de exposição</p>
-    </div>
-    <div class="kpi-card" style="--accent-color:#C23B3B">
-      <p class="kpi-label">Faixa etária crítica</p><p class="kpi-value">45–59</p>
-      <p class="kpi-sub">Anos – maior notificação</p><p class="kpi-trend up">Latência da doença</p>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Tipo</p>
-        <p class="chart-title">Pneumoconiose por tipo e ano</p>
-        <p class="chart-desc">Distribuição dos tipos ao longo do período</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barPneumoTipo" role="img" aria-label="Pneumoconioses por tipo e ano">Silicose, asbestose, pneumoconiose carvão, ODTS por ano.</canvas></div>
-      <div class="legend" id="legendPneumoTipo"></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Faixa etária</p>
-        <p class="chart-title">Pneumoconioses por idade</p>
-        <p class="chart-desc">Distribuição etária evidenciando a latência</p>
-      </div>
-      <div class="chart-wrap h280"><canvas id="barPneumoIdade" role="img" aria-label="Pneumoconioses por faixa etária">Por faixa etária.</canvas></div>
-    </div>
-  </div>
-
-  <div class="chart-grid-2">
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Setor</p>
-        <p class="chart-title">Pneumoconioses por atividade econômica</p>
-      </div>
-      <div class="chart-wrap h240"><canvas id="barPneumoSetor" role="img" aria-label="Pneumoconioses por setor econômico">Mineração, construção, indústria, outros.</canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-header">
-        <p class="chart-label">Evolução</p>
-        <p class="chart-title">Tendência anual de notificações</p>
-        <p class="chart-desc">Linha de tendência com subnotificação estimada</p>
-      </div>
-      <div class="chart-wrap h240"><canvas id="linePneumo" role="img" aria-label="Tendência de pneumoconioses">Notificadas vs estimativa real.</canvas></div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#6B6B68"></span>Notificadas</span>
-        <span class="legend-item"><span class="legend-dot" style="background:rgba(194,59,59,0.4)" style="border: 1px dashed #C23B3B"></span>Estimativa real</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════════
-     SOBRE
-════════════════════════════════════════════════════ -->
-<section id="sobre" class="section">
-  <div class="section-head">
-    <p class="section-mono">Projeto de Saúde Coletiva</p>
-    <h2 class="section-title"><strong>Sobre</strong> o Projeto</h2>
-  </div>
-
-  <div class="about-grid">
-    <div>
-      <div class="about-card" style="margin-bottom:16px">
-        <h3>Contexto e Objetivo</h3>
-        <p>Este painel integra o Projeto de Saúde Coletiva (PSC) sobre Agravos Relacionados ao Trabalho e Subnotificação no SINAN, desenvolvido por acadêmicos do curso de Medicina da UniEVANGÉLICA.</p>
-        <p>A ferramenta visa subsidiar sindicatos, profissionais de saúde e gestores públicos com dados epidemiológicos sistematizados, promovendo a cultura da notificação compulsória e evidenciando o fenômeno da subnotificação em Anápolis-GO.</p>
-        <p>Os dados apresentados são baseados nas notificações registradas no SINAN (Sistema de Informação de Agravos de Notificação), disponibilizados pelo DATASUS, e complementados pelo suporte técnico do CEREST Regional Pirineus.</p>
-      </div>
-      <div class="about-card" style="margin-bottom:16px">
-        <h3>Fonte dos Dados</h3>
-        <p><strong>SINAN / DATASUS</strong> — Doenças e Agravos de Notificação (2007–2024)<br>
-        <a href="https://datasus.saude.gov.br/acesso-a-informacao/doencas-e-agravos-de-notificacao-de-2007-em-diante-sinan/" style="color:#1A7A4A;font-size:12px">datasus.saude.gov.br</a></p>
-        <p><strong>Portaria GM/MS nº 5.201/2024</strong> — Lista Nacional de Notificação Compulsória</p>
-        <p><strong>CEREST Regional Pirineus</strong> — Documento técnico institucional, Anápolis, 2026</p>
-        <p style="font-size:12px;color:#6B6B68;font-style:italic">Nota: Os dados numéricos apresentados neste painel são baseados em estimativas epidemiológicas e padrões regionais, para fins didáticos e de demonstração metodológica. Para dados oficiais atualizados, consulte o TabNet/DATASUS.</p>
-      </div>
-      <div class="about-card">
-        <h3>Evento de Apresentação</h3>
-        <p><strong>Data:</strong> 07 de maio de 2026 &nbsp;|&nbsp; <strong>Horário:</strong> 08h00<br>
-        <strong>Local:</strong> Auditório do SESI – Anápolis, Goiás</p>
-        <p><strong>Público-alvo:</strong> Trabalhadores, sindicatos, profissionais de saúde, instituições de ensino, serviços de segurança do trabalho e comunidade em geral.</p>
-      </div>
-    </div>
-
-    <div>
-      <div class="about-card">
-        <h3>Equipe do Projeto</h3>
-        <ul class="team-list">
-          <li>
-            <div>
-              <p>João Vitor de Oliveira Rodrigues</p>
-              <span class="team-role">Líder da Ação Coletiva</span>
-            </div>
-          </li>
-          <li><div><p>Ana Paula Beirigo Barbosa</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Felipe Fonseca Costa</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Fernanda Teixeira</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Gabriella Rosa Rodrigues Dutra</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Geovanna Vitória Souza Rodrigues</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Isadora Morais Dias</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Marcus Kalyel Ferreira Godoi</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Pedro Augusto Silva Resende</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Vitória Tomé Jacinto</p><span class="team-role">Integrante</span></div></li>
-          <li><div><p>Wesley Lima Guimarães</p><span class="team-role">Integrante</span></div></li>
-        </ul>
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100)">
-          <p style="font-size:12px;color:var(--gray-600)">Realização</p>
-          <p style="font-size:14px;font-weight:500">Gerley Adriano Miranda Cruz</p>
-          <p style="font-size:12px;color:var(--gray-600)">Curso de Medicina – M2, 6º período<br>Universidade Evangélica de Goiás</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel SINAN – Agravos Relacionados ao Trabalho · Anápolis-GO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-gradient"></div>
+      <div class="hero-inner">
+        <p class="hero-mono-label">SINAN · DATASUS · Vigilância em Saúde do Trabalhador</p>
+        <h1 class="hero-title">Painel de <strong>Agravos</strong><br />Relacionados ao Trabalho<br /><strong>e Subnotificação</strong> no SINAN</h1>
+        <p class="hero-subtitle">Observatório epidemiológico para Anápolis-GO — Dados de notificação compulsória 2020–2024</p>
+        <div class="hero-meta">
+          <div class="hero-meta-item"><strong>Município</strong>Anápolis, Goiás – Brasil</div>
+          <div class="hero-meta-item"><strong>Período</strong>2020 · 2021 · 2022 · 2023 · 2024</div>
+          <div class="hero-meta-item"><strong>Fonte</strong>SINAN / DATASUS / CEREST Regional Pirineus</div>
+          <div class="hero-meta-item"><strong>Instituição</strong>UniEVANGÉLICA – Medicina M2, 6º período</div>
+          <div class="hero-meta-item"><strong>Evento</strong>07 mai 2026 · Auditório SESI Anápolis</div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </header>
 
-</main>
+    <!-- NAV -->
+    <nav class="nav-wrap">
+      <div class="nav-inner">
+        <button class="nav-tab active" onclick="showSection('visao-geral')">Visão Geral</button>
+        <button class="nav-tab" onclick="showSection('lerdort')">LER/DORT & Dermatoses</button>
+        <button class="nav-tab" onclick="showSection('acidentes')">Acidentes de Trabalho</button>
+        <button class="nav-tab" onclick="showSection('biologico')">Biológico & Câncer</button>
+        <button class="nav-tab" onclick="showSection('auditiva')">Auditiva & Intoxicação</button>
+        <button class="nav-tab" onclick="showSection('mental')">Transtornos Mentais</button>
+        <button class="nav-tab" onclick="showSection('pneumo')">Pneumoconioses</button>
+        <button class="nav-tab" onclick="showSection('sobre')">Sobre o Projeto</button>
+      </div>
+    </nav>
 
-<footer>
-  <p>
-    <strong>Painel SINAN · Anápolis-GO</strong> &nbsp;·&nbsp;
-    Agravos Relacionados ao Trabalho &nbsp;·&nbsp;
-    PSC – UniEVANGÉLICA Medicina M2 &nbsp;·&nbsp;
-    Dados: SINAN/DATASUS · CEREST Pirineus &nbsp;·&nbsp;
-    2020–2024
-  </p>
-</footer>
+    <main class="main">
+      <!-- ══════════════════════════════════════════════════
+           VISÃO GERAL
+      ════════════════════════════════════════════════════ -->
+      <section id="visao-geral" class="section active">
+        <div class="section-head">
+          <p class="section-mono">Panorama · 2020–2024</p>
+          <h2 class="section-title"><strong>Visão Geral</strong> dos Agravos Notificados</h2>
+        </div>
 
-<script>
-/* ─── NAVIGATION ─── */
-function showSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  event.currentTarget.classList.add('active');
-}
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #1a7a4a">
+            <p class="kpi-label">Total notificado</p>
+            <p class="kpi-value">4.287</p>
+            <p class="kpi-sub">Casos 2020–2024</p>
+            <p class="kpi-trend up">+18% vs período anterior</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #1b5ea8">
+            <p class="kpi-label">Acidente Trabalho</p>
+            <p class="kpi-value">1.643</p>
+            <p class="kpi-sub">Agravo mais frequente</p>
+            <p class="kpi-trend up">38,3% do total</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #b86b0d">
+            <p class="kpi-label">LER / DORT</p>
+            <p class="kpi-value">812</p>
+            <p class="kpi-sub">2º agravo mais notif.</p>
+            <p class="kpi-trend up">+22% em 5 anos</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #5241b0">
+            <p class="kpi-label">Intoxicação Exógena</p>
+            <p class="kpi-value">634</p>
+            <p class="kpi-sub">Significativa subnotif.</p>
+            <p class="kpi-trend up">Tendência crescente</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Transtornos Mentais</p>
+            <p class="kpi-value">398</p>
+            <p class="kpi-sub">Alta subnotificação</p>
+            <p class="kpi-trend up">+41% desde 2020</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #0f7360">
+            <p class="kpi-label">Taxa subnotif. estimada</p>
+            <p class="kpi-value">~67%</p>
+            <p class="kpi-sub">Casos não registrados</p>
+            <p class="kpi-trend down">Meta OMS: &lt;30%</p>
+          </div>
+        </div>
 
-/* ─── COLORS ─── */
-const C = {
-  blue: '#1B5EA8', blueA: 'rgba(27,94,168,0.7)', blueL: 'rgba(27,94,168,0.15)',
-  red: '#C23B3B', redA: 'rgba(194,59,59,0.7)', redL: 'rgba(194,59,59,0.15)',
-  green: '#1A7A4A', greenA: 'rgba(26,122,74,0.7)', greenL: 'rgba(26,122,74,0.15)',
-  amber: '#B86B0D', amberA: 'rgba(184,107,13,0.7)', amberL: 'rgba(184,107,13,0.15)',
-  purple: '#5241B0', purpleA: 'rgba(82,65,176,0.7)', purpleL: 'rgba(82,65,176,0.15)',
-  teal: '#0F7360', tealA: 'rgba(15,115,96,0.7)', tealL: 'rgba(15,115,96,0.15)',
-  gray: '#6B6B68', grayA: 'rgba(107,107,104,0.6)', grayL: 'rgba(107,107,104,0.15)',
-};
+        <!-- Linha temporal geral -->
+        <div class="chart-card-wide">
+          <div class="chart-header">
+            <p class="chart-label">Série Histórica</p>
+            <p class="chart-title">Total de notificações por agravo (2020–2024)</p>
+            <p class="chart-desc">Evolução anual dos principais agravos relacionados ao trabalho notificados no SINAN em Anápolis-GO</p>
+          </div>
+          <div class="chart-wrap h300">
+            <canvas id="lineGeral" role="img" aria-label="Gráfico de linha com evolução das notificações por agravo de 2020 a 2024"
+              >Dados de notificações anuais SINAN Anápolis 2020-2024.</canvas
+            >
+          </div>
+          <div class="legend" id="legendLineGeral"></div>
+        </div>
 
-const ANOS = ['2020','2021','2022','2023','2024'];
-const IDADES = ['18–24','25–34','35–44','45–54','55–64','65+'];
+        <div class="chart-grid-2">
+          <!-- Distribuição por agravo -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Composição</p>
+              <p class="chart-title">Distribuição por tipo de agravo</p>
+              <p class="chart-desc">Proporção acumulada 2020–2024</p>
+            </div>
+            <div class="chart-wrap h300">
+              <canvas id="pieAgravos" role="img" aria-label="Gráfico de pizza com distribuição dos tipos de agravos"
+                >LER/DORT, Acidentes, Biológico, Auditiva, Intoxicação, Mental, Pneumoconiose, Dermatose, Câncer.</canvas
+              >
+            </div>
+            <div class="legend" id="legendPie"></div>
+          </div>
 
-const DEFAULTS = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { display: false }, tooltip: { callbacks: {} } },
-  scales: {}
-};
+          <!-- Pirâmide etária geral -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Demografico</p>
+              <p class="chart-title">Distribuição por sexo e faixa etária</p>
+              <p class="chart-desc">Pirâmide epidemiológica – total de casos</p>
+            </div>
+            <div class="chart-wrap h300">
+              <canvas id="piramide" role="img" aria-label="Pirâmide etária com distribuição por sexo e idade"
+                >Faixas etárias de 18-24 até 65+ anos, divididas por masculino e feminino.</canvas
+              >
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #1b5ea8"></span>Masculino</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #c23b3b"></span>Feminino</span>
+            </div>
+          </div>
+        </div>
 
-function mkLegend(containerId, items) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = items.map(([color, label]) =>
-    `<span class="legend-item"><span class="legend-dot" style="background:${color}"></span>${label}</span>`
-  ).join('');
-}
+        <div class="chart-grid-2">
+          <!-- Radar geral -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Perfil comparativo</p>
+              <p class="chart-title">Radar: agravos por sexo (média anual)</p>
+              <p class="chart-desc">Intensidade relativa de cada agravo por gênero</p>
+            </div>
+            <div class="chart-wrap h300">
+              <canvas id="radarSexo" role="img" aria-label="Gráfico radar comparando agravos por sexo"
+                >Comparação de agravos entre masculino e feminino por categoria.</canvas
+              >
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: rgba(27, 94, 168, 0.6)"></span>Masculino</span>
+              <span class="legend-item"><span class="legend-dot" style="background: rgba(194, 59, 59, 0.6)"></span>Feminino</span>
+            </div>
+          </div>
 
-function axisDefaults(color='#ABABAB') {
-  return {
-    grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false },
-    ticks: { color, font: { family: 'DM Sans', size: 11 } }
-  };
-}
+          <!-- Barras por setor -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Setor econômico</p>
+              <p class="chart-title">Notificações por setor produtivo</p>
+              <p class="chart-desc">Total acumulado 2020–2024, Anápolis-GO</p>
+            </div>
+            <div class="chart-wrap h300">
+              <canvas id="barSetor" role="img" aria-label="Gráfico de barras com notificações por setor econômico"
+                >Setores: Indústria, Saúde, Comércio, Agropecuária, Construção, Transporte, Serviços.</canvas
+              >
+            </div>
+          </div>
+        </div>
+      </section>
 
-/* ═══════════════════════════════════
-   VISÃO GERAL
-═══════════════════════════════════ */
+      <!-- ══════════════════════════════════════════════════
+           LER/DORT & DERMATOSES
+      ════════════════════════════════════════════════════ -->
+      <section id="lerdort" class="section">
+        <div class="section-head">
+          <p class="section-mono">Análise Específica</p>
+          <h2 class="section-title"><strong>LER/DORT</strong> e Dermatoses Ocupacionais</h2>
+        </div>
 
-/* Linha geral */
-new Chart(document.getElementById('lineGeral'), {
-  type: 'line',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Acidente Trab.', data:[290,318,335,348,352], borderColor:C.blue, backgroundColor:C.blueL, tension:0.4, fill:false, pointRadius:5, borderWidth:2 },
-      { label:'LER/DORT', data:[140,158,162,171,181], borderColor:C.amber, backgroundColor:C.amberL, tension:0.4, fill:false, pointRadius:5, borderWidth:2 },
-      { label:'Intoxicação', data:[105,115,128,140,146], borderColor:C.purple, backgroundColor:C.purpleL, tension:0.4, fill:false, pointRadius:5, borderWidth:2 },
-      { label:'Mat. Biológico', data:[88,102,68,62,69], borderColor:C.teal, backgroundColor:C.tealL, tension:0.4, fill:false, pointRadius:5, borderWidth:2 },
-      { label:'Transt. Mental', data:[58,72,82,89,97], borderColor:C.red, backgroundColor:C.redL, tension:0.4, fill:false, pointRadius:5, borderWidth:2 },
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero: true } } }
-});
-mkLegend('legendLineGeral',[
-  [C.blue,'Acidente Trab.'],[C.amber,'LER/DORT'],[C.purple,'Intoxicação'],
-  [C.teal,'Mat. Biológico'],[C.red,'Transt. Mental']
-]);
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #b86b0d">
+            <p class="kpi-label">LER/DORT total</p>
+            <p class="kpi-value">812</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">+22% no período</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #0f7360">
+            <p class="kpi-label">Dermatoses total</p>
+            <p class="kpi-value">187</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Crescimento estável</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #5241b0">
+            <p class="kpi-label">Pico feminino – LER</p>
+            <p class="kpi-value">68%</p>
+            <p class="kpi-sub">Casos em mulheres</p>
+            <p class="kpi-trend up">Setor terciário</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Faixa de risco</p>
+            <p class="kpi-value">30–44</p>
+            <p class="kpi-sub">Anos – faixa predominante</p>
+            <p class="kpi-trend up">52% dos casos</p>
+          </div>
+        </div>
 
-/* Pizza geral */
-new Chart(document.getElementById('pieAgravos'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Acid. Trabalho','LER/DORT','Intoxicação','Mat. Biológico','Acid. Animais','Transt. Mental','PAIR','Dermatose','Pneumoconiose','Câncer Trab.'],
-    datasets: [{ data:[1643,812,634,389,204,398,276,187,82,62],
-      backgroundColor:[C.blue,C.amber,C.purple,C.teal,C.red,C.red,C.green,C.teal,C.gray,'#3C3434'],
-      borderWidth:2, borderColor:'#ffffff' }]
-  },
-  options: { ...DEFAULTS, cutout:'55%' }
-});
-mkLegend('legendPie',[
-  [C.blue,'Ac. Trab. 38,3%'],[C.amber,'LER/DORT 19,0%'],[C.purple,'Intox. 14,8%'],
-  [C.teal,'Mat. Biol. 9,1%'],[C.green,'PAIR 6,4%'],[C.red,'T. Mental 9,3%'],
-]);
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Série histórica</p>
+              <p class="chart-title">LER/DORT por ano e sexo</p>
+              <p class="chart-desc">Evolução 2020–2024 com estratificação por sexo</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barLerSexo" role="img" aria-label="Barras agrupadas LER/DORT por sexo e ano"
+                >LER/DORT masculino e feminino de 2020 a 2024.</canvas
+              >
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #1b5ea8"></span>Masculino</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #c23b3b"></span>Feminino</span>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Área acumulada</p>
+              <p class="chart-title">LER vs. Dermatoses – tendência</p>
+              <p class="chart-desc">Comparativo em área empilhada 2020–2024</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="areaLerDerm" role="img" aria-label="Área empilhada LER/DORT e Dermatoses"
+                >Área empilhada comparativa dos dois agravos.</canvas
+              >
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: rgba(184, 107, 13, 0.6)"></span>LER/DORT</span>
+              <span class="legend-item"><span class="legend-dot" style="background: rgba(15, 115, 96, 0.6)"></span>Dermatoses</span>
+            </div>
+          </div>
+        </div>
 
-/* Pirâmide etária */
-new Chart(document.getElementById('piramide'), {
-  type: 'bar',
-  data: {
-    labels: IDADES,
-    datasets: [
-      { label:'Masculino', data:[-142,-298,-356,-312,-241,-98], backgroundColor:C.blueA, borderRadius:3 },
-      { label:'Feminino', data:[88,176,214,178,132,61], backgroundColor:C.redA, borderRadius:3 }
-    ]
-  },
-  options: {
-    ...DEFAULTS, indexAxis:'y',
-    scales: {
-      x: { ...axisDefaults(), ticks: { callback: v => Math.abs(v), color:'#ABABAB', font:{size:11} } },
-      y: axisDefaults()
-    }
-  }
-});
+        <div class="chart-grid-3">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Faixa etária</p>
+              <p class="chart-title">LER/DORT por idade</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="barLerIdade" role="img" aria-label="LER/DORT por faixa etária">LER/DORT distribuído por faixa etária.</canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Tipo de lesão</p>
+              <p class="chart-title">Diagnósticos LER mais frequentes</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="pieLer" role="img" aria-label="Tipos de LER/DORT mais frequentes"
+                >Tendinite, DORT, Síndrome do túnel do carpo, Bursite, Cervicalgia.</canvas
+              >
+            </div>
+            <div class="legend" id="legendLerPie"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Setor de trabalho</p>
+              <p class="chart-title">LER/DORT por atividade econômica</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="barLerSetor" role="img" aria-label="LER/DORT por setor econômico">Setores com mais LER/DORT.</canvas>
+            </div>
+          </div>
+        </div>
+      </section>
 
-/* Radar sexo */
-new Chart(document.getElementById('radarSexo'), {
-  type: 'radar',
-  data: {
-    labels: ['Acid. Trab.','LER/DORT','Intox.','Mat. Biol.','Animais','T. Mental','PAIR','Dermatose','Pneumo.'],
-    datasets: [
-      { label:'Masculino', data:[78,32,52,29,65,42,83,48,96], backgroundColor:'rgba(27,94,168,0.15)', borderColor:C.blue, pointBackgroundColor:C.blue, borderWidth:2 },
-      { label:'Feminino', data:[22,68,48,71,35,58,17,52,4], backgroundColor:'rgba(194,59,59,0.15)', borderColor:C.red, pointBackgroundColor:C.red, borderWidth:2 }
-    ]
-  },
-  options: {
-    ...DEFAULTS,
-    scales: {
-      r: {
-        ticks: { display:false }, grid: { color:'rgba(0,0,0,0.08)' },
-        pointLabels: { color:'#6B6B68', font:{size:11, family:'DM Sans'} }
-      }
-    }
-  }
-});
+      <!-- ══════════════════════════════════════════════════
+           ACIDENTES DE TRABALHO
+      ════════════════════════════════════════════════════ -->
+      <section id="acidentes" class="section">
+        <div class="section-head">
+          <p class="section-mono">Análise Específica</p>
+          <h2 class="section-title"><strong>Acidentes de Trabalho</strong> e Acidentes por Animais Peçonhentos</h2>
+        </div>
 
-/* Barras setor */
-new Chart(document.getElementById('barSetor'), {
-  type: 'bar',
-  data: {
-    labels: ['Indústria','Saúde','Comércio','Construção','Agropecuária','Transporte','Serviços','Outros'],
-    datasets: [{ label:'Notificações', data:[1124,748,586,412,358,287,441,331],
-      backgroundColor: [C.blueA,C.tealA,C.amberA,C.grayA,C.greenA,C.purpleA,C.redA,'rgba(100,100,100,0.5)'],
-      borderRadius:4, borderWidth:0 }]
-  },
-  options: {
-    ...DEFAULTS, indexAxis:'y',
-    scales: { x: axisDefaults(), y: axisDefaults() }
-  }
-});
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #1b5ea8">
+            <p class="kpi-label">Acid. Trabalho grave</p>
+            <p class="kpi-value">1.643</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Mais notificado</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Animais peçonhentos</p>
+            <p class="kpi-value">204</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">+15% em 2023/24</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #b86b0d">
+            <p class="kpi-label">Masculino</p>
+            <p class="kpi-value">78%</p>
+            <p class="kpi-sub">Acidentes graves</p>
+            <p class="kpi-trend up">Indústria e construção</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #1a7a4a">
+            <p class="kpi-label">Pico etário</p>
+            <p class="kpi-value">25–34</p>
+            <p class="kpi-sub">Anos – maior incidência</p>
+            <p class="kpi-trend up">39% dos casos</p>
+          </div>
+        </div>
 
-/* ═══════════════════════════════════
-   LER/DORT
-═══════════════════════════════════ */
-new Chart(document.getElementById('barLerSexo'), {
-  type: 'bar',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Masculino', data:[46,52,54,56,59], backgroundColor:C.blueA, borderRadius:3, borderWidth:0 },
-      { label:'Feminino', data:[94,106,108,115,122], backgroundColor:C.redA, borderRadius:3, borderWidth:0 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true, stacked:false } } }
-});
+        <div class="chart-card-wide">
+          <div class="chart-header">
+            <p class="chart-label">Evolução temporal</p>
+            <p class="chart-title">Acidentes de trabalho grave por mês – 2022–2024</p>
+            <p class="chart-desc">Sazonalidade das notificações com linha de tendência</p>
+          </div>
+          <div class="chart-wrap h280">
+            <canvas id="lineMensal" role="img" aria-label="Acidentes mensais 2022 a 2024">Série mensal de acidentes de trabalho com tendência.</canvas>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background: #1b5ea8"></span>Acidente Trabalho</span>
+            <span class="legend-item"><span class="legend-dot" style="background: #c23b3b"></span>Animais Peçonhentos</span>
+          </div>
+        </div>
 
-new Chart(document.getElementById('areaLerDerm'), {
-  type: 'line',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'LER/DORT', data:[140,158,162,171,181], backgroundColor:C.amberL, borderColor:C.amber, fill:true, tension:0.4, borderWidth:2 },
-      { label:'Dermatoses', data:[32,36,38,40,41], backgroundColor:C.tealL, borderColor:C.teal, fill:true, tension:0.4, borderWidth:2 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Comparativo</p>
+              <p class="chart-title">Acidentes por tipo e sexo</p>
+              <p class="chart-desc">Distribuição por categoria e gênero</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barAcidSexo" role="img" aria-label="Acidentes por tipo e sexo">Tipo de acidente separado por masculino e feminino.</canvas>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #1b5ea8"></span>Masculino</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #c23b3b"></span>Feminino</span>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Setor</p>
+              <p class="chart-title">Acidentes graves por setor – 2024</p>
+              <p class="chart-desc">Distribuição setorial dos acidentes de trabalho</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="pieAcidSetor" role="img" aria-label="Pizza acidentes por setor 2024">Acidentes por setor econômico em 2024.</canvas>
+            </div>
+            <div class="legend" id="legendAcidPie"></div>
+          </div>
+        </div>
 
-new Chart(document.getElementById('barLerIdade'), {
-  type: 'bar',
-  data: {
-    labels: IDADES,
-    datasets: [{ label:'LER/DORT', data:[48,198,245,182,98,41],
-      backgroundColor:IDADES.map((_,i) => `rgba(184,107,13,${0.4+i*0.08})`), borderRadius:3 }]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+        <div class="chart-grid-3">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Parte do corpo</p>
+              <p class="chart-title">Lesões mais frequentes</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="barParteCorpo" role="img" aria-label="Partes do corpo mais afetadas em acidentes"
+                >Mãos, pés, cabeça, coluna, membros inferiores.</canvas
+              >
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Animais</p>
+              <p class="chart-title">Acidentes por tipo de animal</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="pieAnimal" role="img" aria-label="Tipos de animais peçonhentos envolvidos"
+                >Serpentes, escorpiões, aranhas, abelhas, outros.</canvas
+              >
+            </div>
+            <div class="legend" id="legendAnimalPie"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Evolução</p>
+              <p class="chart-title">Tendência anual comparativa</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="lineAcidTend" role="img" aria-label="Tendência anual acidentes vs animais">Linha de tendência dos dois tipos de acidentes.</canvas>
+            </div>
+          </div>
+        </div>
+      </section>
 
-new Chart(document.getElementById('pieLer'), {
-  type: 'pie',
-  data: {
-    labels: ['Tendinite','DORT','T. Carpo','Bursite','Cervicalgia','Outros'],
-    datasets: [{ data:[28,22,18,14,10,8],
-      backgroundColor:[C.amber,'#D4891A','#E8B45E','#F5D49A',C.teal,C.gray], borderWidth:2, borderColor:'#fff' }]
-  },
-  options: { ...DEFAULTS }
-});
-mkLegend('legendLerPie',[[C.amber,'Tendinite 28%'],['#D4891A','DORT 22%'],['#E8B45E','T. Carpo 18%'],['#F5D49A','Bursite 14%'],[C.teal,'Cervicalgia 10%']]);
+      <!-- ══════════════════════════════════════════════════
+           BIOLÓGICO & CÂNCER
+      ════════════════════════════════════════════════════ -->
+      <section id="biologico" class="section">
+        <div class="section-head">
+          <p class="section-mono">Análise Específica</p>
+          <h2 class="section-title"><strong>Acidente com Material Biológico</strong> e Câncer Relacionado ao Trabalho</h2>
+        </div>
 
-new Chart(document.getElementById('barLerSetor'), {
-  type: 'bar',
-  data: {
-    labels: ['Comércio','Saúde','Indústria','Serviços','T.I.','Admin.'],
-    datasets: [{ label:'LER/DORT', data:[218,175,142,138,78,61], backgroundColor:C.amberA, borderRadius:3, borderWidth:0 }]
-  },
-  options: { ...DEFAULTS, indexAxis:'y', scales: { x: axisDefaults(), y: axisDefaults() } }
-});
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #5241b0">
+            <p class="kpi-label">Mat. biológico total</p>
+            <p class="kpi-value">389</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Setor saúde: 84%</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Câncer ocup. total</p>
+            <p class="kpi-value">62</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Alta subnotificação</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #1a7a4a">
+            <p class="kpi-label">Feminino – biológico</p>
+            <p class="kpi-value">71%</p>
+            <p class="kpi-sub">Predominância feminina</p>
+            <p class="kpi-trend up">Enfermagem 58%</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #b86b0d">
+            <p class="kpi-label">COVID-19 (2020-21)</p>
+            <p class="kpi-value">+143%</p>
+            <p class="kpi-sub">Pico notificações mat. biol.</p>
+            <p class="kpi-trend up">Pandemia</p>
+          </div>
+        </div>
 
-/* ═══════════════════════════════════
-   ACIDENTES
-═══════════════════════════════════ */
-const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const mesesAll = [...meses.map(m=>m+'/22'),...meses.map(m=>m+'/23'),...meses.map(m=>m+'/24')];
-const acidMensal = [28,24,31,27,33,29,35,38,32,34,30,26, 29,26,34,31,36,32,38,41,35,37,33,29, 31,28,36,33,39,35,40,44,37,40,36,31];
-const animalMensal = [3,2,4,5,7,8,9,10,8,6,4,3, 3,3,5,6,8,9,10,11,9,7,5,4, 4,3,5,7,9,10,11,12,10,8,6,5];
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Série histórica</p>
+              <p class="chart-title">Acidente biológico por ano e sexo</p>
+              <p class="chart-desc">Evolução temporal com estratificação por gênero</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barBioSexo" role="img" aria-label="Acidente biológico por sexo e ano">Acidente biológico masculino e feminino anualmente.</canvas>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #1b5ea8"></span>Masculino</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #c23b3b"></span>Feminino</span>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Tipo de exposição</p>
+              <p class="chart-title">Material biológico por tipo</p>
+              <p class="chart-desc">Categorização dos acidentes biológicos registrados</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="pieExposicao" role="img" aria-label="Tipos de exposição a material biológico">Pérfuro-cortante, respingos, mordedura, outros.</canvas>
+            </div>
+            <div class="legend" id="legendBioPie"></div>
+          </div>
+        </div>
 
-new Chart(document.getElementById('lineMensal'), {
-  type: 'line',
-  data: {
-    labels: mesesAll,
-    datasets: [
-      { label:'Acid. Trabalho', data:acidMensal, borderColor:C.blue, backgroundColor:'transparent', tension:0.3, borderWidth:2, pointRadius:2 },
-      { label:'Animais Peçonhentos', data:animalMensal, borderColor:C.red, backgroundColor:'transparent', tension:0.3, borderWidth:2, pointRadius:2 }
-    ]
-  },
-  options: {
-    ...DEFAULTS,
-    scales: {
-      x: { ...axisDefaults(), ticks: { maxRotation:45, color:'#ABABAB', font:{size:10}, maxTicksLimit:12 } },
-      y: { ...axisDefaults(), beginAtZero:true }
-    }
-  }
-});
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Profissão</p>
+              <p class="chart-title">Categorias profissionais – biológico</p>
+              <p class="chart-desc">Profissões com maior exposição notificada</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barBioProfissao" role="img" aria-label="Acidentes biológicos por profissão"
+                >Enfermagem, médico, auxiliar, dentista, limpeza, outros.</canvas
+              >
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Câncer Ocupacional</p>
+              <p class="chart-title">Câncer relacionado ao trabalho por tipo</p>
+              <p class="chart-desc">Distribuição dos cânceres notificados 2020–2024</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barCancer" role="img" aria-label="Tipos de câncer ocupacional">Pulmão, pele, bexiga, leucemia, outros.</canvas>
+            </div>
+          </div>
+        </div>
+      </section>
 
-new Chart(document.getElementById('barAcidSexo'), {
-  type: 'bar',
-  data: {
-    labels: ['Acid. Grave','Acid. Biológico','Acid. Animais','Acid. Trajeto'],
-    datasets: [
-      { label:'Masculino', data:[1281,112,138,201], backgroundColor:C.blueA, borderRadius:3, borderWidth:0 },
-      { label:'Feminino', data:[362,277,66,159], backgroundColor:C.redA, borderRadius:3, borderWidth:0 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+      <!-- ══════════════════════════════════════════════════
+           AUDITIVA & INTOXICAÇÃO
+      ════════════════════════════════════════════════════ -->
+      <section id="auditiva" class="section">
+        <div class="section-head">
+          <p class="section-mono">Análise Específica</p>
+          <h2 class="section-title"><strong>Perda Auditiva</strong> e Intoxicação Exógena</h2>
+        </div>
 
-new Chart(document.getElementById('pieAcidSetor'), {
-  type: 'pie',
-  data: {
-    labels: ['Indústria','Construção','Transporte','Comércio','Saúde','Agropec.','Outros'],
-    datasets: [{ data:[34,22,16,12,8,5,3],
-      backgroundColor:[C.blue,'#3A82C0','#6EAEE0',C.teal,C.purple,C.green,C.gray], borderWidth:2, borderColor:'#fff' }]
-  },
-  options: { ...DEFAULTS }
-});
-mkLegend('legendAcidPie',[[C.blue,'Indústria 34%'],['#3A82C0','Construção 22%'],['#6EAEE0','Transporte 16%'],[C.teal,'Comércio 12%'],[C.purple,'Saúde 8%']]);
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #0f7360">
+            <p class="kpi-label">PAIR total</p>
+            <p class="kpi-value">276</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Industrial 89%</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #5241b0">
+            <p class="kpi-label">Intoxicação total</p>
+            <p class="kpi-value">634</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Agrotóxicos 44%</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #1b5ea8">
+            <p class="kpi-label">PAIR masculino</p>
+            <p class="kpi-value">83%</p>
+            <p class="kpi-sub">Predominância masculina</p>
+            <p class="kpi-trend up">Metalurgia e ind.</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Intox. faixa risco</p>
+            <p class="kpi-value">18–39</p>
+            <p class="kpi-sub">Anos – maior incidência</p>
+            <p class="kpi-trend up">61% dos casos</p>
+          </div>
+        </div>
 
-new Chart(document.getElementById('barParteCorpo'), {
-  type: 'bar',
-  data: {
-    labels: ['Mãos/Dedos','Pés/Tornozelo','Olhos','Coluna','Membros inf.','Cabeça','Tronco'],
-    datasets: [{ label:'Frequência', data:[382,248,195,178,156,134,112],
-      backgroundColor:['#1B5EA8','#2A72C4','#4A90D8','#6EAEE0','#96C8EC','#BAD9F2','#D6EAF8'].map(c=>c+'CC'), borderRadius:3 }]
-  },
-  options: { ...DEFAULTS, indexAxis:'y', scales: { x: axisDefaults(), y: axisDefaults() } }
-});
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Comparativo</p>
+              <p class="chart-title">PAIR vs. Intoxicação – área empilhada</p>
+              <p class="chart-desc">Volume de notificações anuais comparado</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="areaAudInt" role="img" aria-label="Área PAIR e intoxicação por ano">Área empilhada PAIR e intoxicação.</canvas>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: rgba(15, 115, 96, 0.7)"></span>PAIR</span>
+              <span class="legend-item"><span class="legend-dot" style="background: rgba(82, 65, 176, 0.7)"></span>Intoxicação</span>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Agentes</p>
+              <p class="chart-title">Intoxicação por agente causador</p>
+              <p class="chart-desc">Distribuição dos agentes nas notificações</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="pieIntoxAgente" role="img" aria-label="Agentes causadores de intoxicação"
+                >Agrotóxico, medicamento, produto domissanitário, metal, outros.</canvas
+              >
+            </div>
+            <div class="legend" id="legendIntoxPie"></div>
+          </div>
+        </div>
 
-new Chart(document.getElementById('pieAnimal'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Escorpiões','Serpentes','Aranhas','Abelhas','Outros'],
-    datasets: [{ data:[48,28,14,7,3],
-      backgroundColor:[C.red,C.amber,C.purple,C.green,C.gray], borderWidth:2, borderColor:'#fff' }]
-  },
-  options: { ...DEFAULTS, cutout:'45%' }
-});
-mkLegend('legendAnimalPie',[[C.red,'Escorpiões 48%'],[C.amber,'Serpentes 28%'],[C.purple,'Aranhas 14%'],[C.green,'Abelhas 7%']]);
+        <div class="chart-grid-3">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Faixa etária</p>
+              <p class="chart-title">PAIR por idade e sexo</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="barPairIdade" role="img" aria-label="PAIR por faixa etária e sexo">PAIR por faixa etária separado por sexo.</canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Setor</p>
+              <p class="chart-title">PAIR por setor industrial</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="barPairSetor" role="img" aria-label="PAIR por setor industrial">Setores industriais com PAIR.</canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Gravidade</p>
+              <p class="chart-title">Intoxicação por grau de severidade</p>
+            </div>
+            <div class="chart-wrap h220">
+              <canvas id="barIntoxGrav" role="img" aria-label="Intoxicação por grau de severidade">Leve, moderada, grave, óbito.</canvas>
+            </div>
+          </div>
+        </div>
+      </section>
 
-new Chart(document.getElementById('lineAcidTend'), {
-  type: 'line',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Acid. Trabalho', data:[290,318,335,348,352], borderColor:C.blue, tension:0.4, fill:false, borderWidth:2, pointRadius:5 },
-      { label:'Animais Peçonhentos', data:[36,38,40,43,47], borderColor:C.red, tension:0.4, fill:false, borderWidth:2, pointRadius:5, borderDash:[4,3] }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+      <!-- ══════════════════════════════════════════════════
+           TRANSTORNOS MENTAIS
+      ════════════════════════════════════════════════════ -->
+      <section id="mental" class="section">
+        <div class="section-head">
+          <p class="section-mono">Análise Específica</p>
+          <h2 class="section-title"><strong>Transtornos Mentais</strong> Relacionados ao Trabalho</h2>
+        </div>
 
-/* ═══════════════════════════════════
-   BIOLÓGICO & CÂNCER
-═══════════════════════════════════ */
-new Chart(document.getElementById('barBioSexo'), {
-  type: 'bar',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Masculino', data:[24,28,18,17,19], backgroundColor:C.blueA, borderRadius:3, borderWidth:0 },
-      { label:'Feminino', data:[64,74,50,45,50], backgroundColor:C.redA, borderRadius:3, borderWidth:0 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Total notificado</p>
+            <p class="kpi-value">398</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">+41% no período</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #5241b0">
+            <p class="kpi-label">Burnout + Depressão</p>
+            <p class="kpi-value">61%</p>
+            <p class="kpi-sub">Do total de casos</p>
+            <p class="kpi-trend up">Diagnósticos mais freq.</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #b86b0d">
+            <p class="kpi-label">Feminino</p>
+            <p class="kpi-value">58%</p>
+            <p class="kpi-sub">Predominância feminina</p>
+            <p class="kpi-trend up">Setor serviços</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #1a7a4a">
+            <p class="kpi-label">Estimativa real</p>
+            <p class="kpi-value">~3×</p>
+            <p class="kpi-sub">Casos não notificados</p>
+            <p class="kpi-trend up">Alta subnotificação</p>
+          </div>
+        </div>
 
-new Chart(document.getElementById('pieExposicao'), {
-  type: 'pie',
-  data: {
-    labels: ['Pérfuro-cortante','Respingo mucosa','Contato pele','Mordedura','Outros'],
-    datasets: [{ data:[58,22,12,5,3],
-      backgroundColor:[C.purple,'#7865D0','#9E90E2','#C0B8F0',C.gray], borderWidth:2, borderColor:'#fff' }]
-  },
-  options: { ...DEFAULTS }
-});
-mkLegend('legendBioPie',[[C.purple,'Pérfuro-cortante 58%'],['#7865D0','Respingo 22%'],['#9E90E2','Contato pele 12%']]);
+        <div class="chart-card-wide">
+          <div class="chart-header">
+            <p class="chart-label">Crescimento acelerado</p>
+            <p class="chart-title">Transtornos mentais: evolução 2020–2024 por diagnóstico</p>
+            <p class="chart-desc">Impacto da pandemia e aumento da vigilância</p>
+          </div>
+          <div class="chart-wrap h300">
+            <canvas id="barMentalDiag" role="img" aria-label="Transtornos mentais por diagnóstico e ano">Burnout, depressão, ansiedade, PTSD, outros por ano.</canvas>
+          </div>
+          <div class="legend" id="legendMentalDiag"></div>
+        </div>
 
-new Chart(document.getElementById('barBioProfissao'), {
-  type: 'bar',
-  data: {
-    labels: ['Enfermagem','Aux. Enf.','Médico','Dentista','Fisioterapeuta','Limpeza','Outros'],
-    datasets: [{ label:'Casos', data:[138,84,52,38,24,31,22],
-      backgroundColor:C.purpleA, borderRadius:3, borderWidth:0 }]
-  },
-  options: { ...DEFAULTS, indexAxis:'y', scales: { x: axisDefaults(), y: axisDefaults() } }
-});
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Demografico</p>
+              <p class="chart-title">Transtornos mentais por faixa etária and sexo</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barMentalIdade" role="img" aria-label="Transtornos mentais por idade and sexo">Por faixa etária separado por sexo.</canvas>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #1b5ea8"></span>Masculino</span>
+              <span class="legend-item"><span class="legend-dot" style="background: #c23b3b"></span>Feminino</span>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Setor</p>
+              <p class="chart-title">Transtornos mentais por setor de trabalho</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barMentalSetor" role="img" aria-label="Transtornos mentais por setor">Por setor econômico.</canvas>
+            </div>
+          </div>
+        </div>
+      </section>
 
-new Chart(document.getElementById('barCancer'), {
-  type: 'bar',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Pulmão', data:[5,6,7,7,8], backgroundColor:C.red, borderRadius:3, borderWidth:0 },
-      { label:'Pele', data:[3,4,4,5,5], backgroundColor:C.amber, borderRadius:3, borderWidth:0 },
-      { label:'Bexiga', data:[1,2,2,2,3], backgroundColor:C.purple, borderRadius:3, borderWidth:0 },
-      { label:'Leucemia', data:[1,1,2,2,2], backgroundColor:C.teal, borderRadius:3, borderWidth:0 },
-    ]
-  },
-  options: {
-    ...DEFAULTS,
-    scales: {
-      x: axisDefaults(),
-      y: { ...axisDefaults(), beginAtZero:true, stacked:true }
-    },
-    plugins: { ...DEFAULTS.plugins }
-  }
-});
+      <!-- ══════════════════════════════════════════════════
+           PNEUMOCONIOSES
+      ════════════════════════════════════════════════════ -->
+      <section id="pneumo" class="section">
+        <div class="section-head">
+          <p class="section-mono">Análise Específica</p>
+          <h2 class="section-title"><strong>Pneumoconioses</strong> Relacionadas ao Trabalho</h2>
+        </div>
 
-/* ═══════════════════════════════════
-   AUDITIVA & INTOXICAÇÃO
-═══════════════════════════════════ */
-new Chart(document.getElementById('areaAudInt'), {
-  type: 'line',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'PAIR', data:[48,54,56,58,60], backgroundColor:'rgba(15,115,96,0.25)', borderColor:C.teal, fill:true, tension:0.4, borderWidth:2 },
-      { label:'Intoxicação', data:[105,115,128,140,146], backgroundColor:'rgba(82,65,176,0.15)', borderColor:C.purple, fill:true, tension:0.4, borderWidth:2 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--accent-color: #6b6b68">
+            <p class="kpi-label">Total notificado</p>
+            <p class="kpi-value">82</p>
+            <p class="kpi-sub">2020–2024</p>
+            <p class="kpi-trend up">Subnotif. estimada 80%</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #1b5ea8">
+            <p class="kpi-label">Silicose</p>
+            <p class="kpi-value">61%</p>
+            <p class="kpi-sub">Tipo mais notificado</p>
+            <p class="kpi-trend up">Mineração e construção</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #b86b0d">
+            <p class="kpi-label">Masculino</p>
+            <p class="kpi-value">96%</p>
+            <p class="kpi-sub">Quase exclusivo homens</p>
+            <p class="kpi-trend up">Perfil de exposição</p>
+          </div>
+          <div class="kpi-card" style="--accent-color: #c23b3b">
+            <p class="kpi-label">Faixa etária crítica</p>
+            <p class="kpi-value">45–59</p>
+            <p class="kpi-sub">Anos – maior notificação</p>
+            <p class="kpi-trend up">Latência da doença</p>
+          </div>
+        </div>
 
-new Chart(document.getElementById('pieIntoxAgente'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Agrotóxico','Medicamento','Domissanitário','Metal pesado','Solvente','Outros'],
-    datasets: [{ data:[44,22,14,9,6,5],
-      backgroundColor:[C.green,C.purple,C.amber,C.red,C.teal,C.gray], borderWidth:2, borderColor:'#fff' }]
-  },
-  options: { ...DEFAULTS, cutout:'50%' }
-});
-mkLegend('legendIntoxPie',[[C.green,'Agrotóxico 44%'],[C.purple,'Medicamento 22%'],[C.amber,'Domissanitário 14%'],[C.red,'Metal pesado 9%']]);
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Tipo</p>
+              <p class="chart-title">Pneumoconiose por tipo e ano</p>
+              <p class="chart-desc">Distribuição dos tipos ao longo do período</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barPneumoTipo" role="img" aria-label="Pneumoconioses por tipo e ano">Silicose, asbestose, pneumoconiose carvão, ODTS por ano.</canvas>
+            </div>
+            <div class="legend" id="legendPneumoTipo"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Faixa etária</p>
+              <p class="chart-title">Pneumoconioses por idade</p>
+              <p class="chart-desc">Distribuição etária evidenciando a latência</p>
+            </div>
+            <div class="chart-wrap h280">
+              <canvas id="barPneumoIdade" role="img" aria-label="Pneumoconioses por faixa etária">Por faixa etária.</canvas>
+            </div>
+          </div>
+        </div>
 
-new Chart(document.getElementById('barPairIdade'), {
-  type: 'bar',
-  data: {
-    labels: IDADES,
-    datasets: [
-      { label:'Masculino', data:[18,42,58,64,36,11], backgroundColor:C.blueA, borderRadius:3 },
-      { label:'Feminino', data:[3,7,10,12,6,2], backgroundColor:C.redA, borderRadius:3 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+        <div class="chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Setor</p>
+              <p class="chart-title">Pneumoconioses por atividade econômica</p>
+            </div>
+            <div class="chart-wrap h240">
+              <canvas id="barPneumoSetor" role="img" aria-label="Pneumoconioses por setor econômico">Mineração, construção, indústria, outros.</canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <p class="chart-label">Evolução</p>
+              <p class="chart-title">Tendência anual de notificações</p>
+              <p class="chart-desc">Linha de tendência com subnotificação estimada</p>
+            </div>
+            <div class="chart-wrap h240">
+              <canvas id="linePneumo" role="img" aria-label="Tendência de pneumoconioses">Notificadas vs estimativa real.</canvas>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="legend-dot" style="background: #6b6b68"></span>Notificadas</span>
+              <span
+                class="legend-item"
+                ><span class="legend-dot" style="background: rgba(194, 59, 59, 0.4)" style="border: 1px dashed #c23b3b"></span>Estimativa real</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
 
-new Chart(document.getElementById('barPairSetor'), {
-  type: 'bar',
-  data: {
-    labels: ['Metalurgia','Mineração','Ind. Cimento','Construção','Ind. Madeira','Agropec.'],
-    datasets: [{ label:'PAIR', data:[84,42,38,36,28,24], backgroundColor:C.tealA, borderRadius:3 }]
-  },
-  options: { ...DEFAULTS, indexAxis:'y', scales: { x: axisDefaults(), y: axisDefaults() } }
-});
+      <!-- ══════════════════════════════════════════════════
+           SOBRE
+      ════════════════════════════════════════════════════ -->
+      <section id="sobre" class="section">
+        <div class="section-head">
+          <p class="section-mono">Projeto de Saúde Coletiva</p>
+          <h2 class="section-title"><strong>Sobre</strong> o Projeto</h2>
+        </div>
 
-new Chart(document.getElementById('barIntoxGrav'), {
-  type: 'bar',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Leve', data:[64,72,80,87,90], backgroundColor:C.greenA, borderRadius:3, borderWidth:0 },
-      { label:'Moderada', data:[28,31,34,37,39], backgroundColor:C.amberA, borderRadius:3, borderWidth:0 },
-      { label:'Grave', data:[11,10,12,14,15], backgroundColor:C.redA, borderRadius:3, borderWidth:0 },
-      { label:'Óbito', data:[2,2,2,2,2], backgroundColor:'#222', borderRadius:3, borderWidth:0 }
-    ]
-  },
-  options: {
-    ...DEFAULTS,
-    scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true, stacked:true } }
-  }
-});
+        <div class="about-grid">
+          <div>
+            <div class="about-card" style="margin-bottom: 16px">
+              <h3>Contexto e Objetivo</h3>
+              <p>
+                Este painel integra o Projeto de Saúde Coletiva (PSC) sobre Agravos Relacionados ao Trabalho and Subnotificação no SINAN, desenvolvido por acadêmicos do
+                curso de Medicina da UniEVANGÉLICA.
+              </p>
+              <p>
+                A ferramenta visa subsidiar sindicatos, profissionais de saúde and gestores públicos com dados epidemiológicos sistematizados, promovendo a cultura da
+                notificação compulsória and evidenciando o fenômeno da subnotificação em Anápolis-GO.
+              </p>
+              <p>
+                Os dados apresentados são baseados nas notificações registradas no SINAN (Sistema de Informação de Agravos de Notificação), disponibilizados pelo
+                DATASUS, and complementados pelo suporte técnico do CEREST Regional Pirineus.
+              </p>
+            </div>
+            <div class="about-card" style="margin-bottom: 16px">
+              <h3>Fonte dos Dados</h3>
+              <p>
+                <strong>SINAN / DATASUS</strong> — Doenças and Agravos de Notificação (2007–2024)<br />
+                <a href="https://datasus.saude.gov.br/acesso-a-informacao/doencas-e-agravos-de-notificacao-de-2007-em-diante-sinan/" style="color: #1a7a4a; font-size: 12px"
+                  >datasus.saude.gov.br</a
+                >
+              </p>
+              <p><strong>Portaria GM/MS nº 5.201/2024</strong> — Lista Nacional de Notificação Compulsória</p>
+              <p><strong>CEREST Regional Pirineus</strong> — Documento técnico institucional, Anápolis, 2026</p>
+              <p style="font-size: 12px; color: #6b6b68; font-style: italic">
+                Nota: Os dados numéricos apresentados neste painel são baseados em estimativas epidemiológicas and padrões regionais, para fins didáticos and de
+                demonstração metodológica. Para dados oficiais atualizados, consulte o TabNet/DATASUS.
+              </p>
+            </div>
+            <div class="about-card">
+              <h3>Evento de Apresentação</h3>
+              <p>
+                <strong>Data:</strong> 07 de maio de 2026 &nbsp;|&nbsp; <strong>Horário:</strong> 08h00<br />
+                <strong>Local:</strong> Auditório do SESI – Anápolis, Goiás
+              </p>
+              <p>
+                <strong>Público-alvo:</strong> Trabalhadores, sindicatos, profissionais de saúde, instituições de ensino, serviços de segurança do trabalho and
+                comunidade em geral.
+              </p>
+            </div>
+          </div>
 
-/* ═══════════════════════════════════
-   TRANSTORNOS MENTAIS
-═══════════════════════════════════ */
-new Chart(document.getElementById('barMentalDiag'), {
-  type: 'bar',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Burnout / Exaustão', data:[14,18,22,27,32], backgroundColor:C.redA, borderRadius:3, borderWidth:0 },
-      { label:'Depressão', data:[18,21,24,26,28], backgroundColor:C.purpleA, borderRadius:3, borderWidth:0 },
-      { label:'Ansiedade', data:[12,16,18,20,22], backgroundColor:C.amberA, borderRadius:3, borderWidth:0 },
-      { label:'PTSD / Estresse', data:[8,10,11,10,9], backgroundColor:C.blueA, borderRadius:3, borderWidth:0 },
-      { label:'Outros', data:[6,7,7,6,6], backgroundColor:C.grayA, borderRadius:3, borderWidth:0 }
-    ]
-  },
-  options: {
-    ...DEFAULTS,
-    scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true, stacked:true } }
-  }
-});
-mkLegend('legendMentalDiag',[
-  [C.red,'Burnout/Exaustão'],[C.purple,'Depressão'],[C.amber,'Ansiedade'],[C.blue,'PTSD/Estresse'],[C.gray,'Outros']
-]);
+          <div>
+            <div class="about-card">
+              <h3>Equipe do Projeto</h3>
+              <ul class="team-list">
+                <li>
+                  <div>
+                    <p>João Vitor de Oliveira Rodrigues</p>
+                    <span class="team-role">Líder da Ação Coletiva</span>
+                  </div>
+                </li>
+                <li>
+                  <div><p>Ana Paula Beirigo Barbosa</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Felipe Fonseca Costa</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Fernanda Teixeira</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Gabriella Rosa Rodrigues Dutra</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Geovanna Vitória Souza Rodrigues</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Isadora Morais Dias</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Marcus Kalyel Ferreira Godoi</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Pedro Augusto Silva Resende</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Vitória Tomé Jacinto</p><span class="team-role">Integrante</span></div>
+                </li>
+                <li>
+                  <div><p>Wesley Lima Guimarães</p><span class="team-role">Integrante</span></div>
+                </li>
+              </ul>
+              <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-100)">
+                <p style="font-size: 12px; color: var(--gray-600)">Realização</p>
+                <p style="font-size: 14px; font-weight: 500">Gerley Adriano Miranda Cruz</p>
+                <p style="font-size: 12px; color: var(--gray-600)">Curso de Medicina – M2, 6º período<br />Universidade Evangélica de Goiás</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
 
-new Chart(document.getElementById('barMentalIdade'), {
-  type: 'bar',
-  data: {
-    labels: IDADES,
-    datasets: [
-      { label:'Masculino', data:[18,42,44,38,22,9], backgroundColor:C.blueA, borderRadius:3 },
-      { label:'Feminino', data:[24,58,62,52,31,12], backgroundColor:C.redA, borderRadius:3 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
+    <footer>
+      <p>
+        <strong>Painel SINAN · Anápolis-GO</strong> &nbsp;·&nbsp; Agravos Relacionados ao Trabalho &nbsp;·&nbsp; PSC – UniEVANGÉLICA Medicina M2 &nbsp;·&nbsp; Dados:
+        SINAN/DATASUS · CEREST Pirineus &nbsp;·&nbsp; 2020–2024
+      </p>
+    </footer>
 
-new Chart(document.getElementById('barMentalSetor'), {
-  type: 'bar',
-  data: {
-    labels: ['Saúde','Educação','Serviços','Comércio','Indústria','Adm. Pública','Outros'],
-    datasets: [{ label:'Casos', data:[112,74,62,54,44,31,21], backgroundColor:C.redA, borderRadius:3 }]
-  },
-  options: { ...DEFAULTS, indexAxis:'y', scales: { x: axisDefaults(), y: axisDefaults() } }
-});
-
-/* ═══════════════════════════════════
-   PNEUMOCONIOSES
-═══════════════════════════════════ */
-new Chart(document.getElementById('barPneumoTipo'), {
-  type: 'bar',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Silicose', data:[10,11,11,12,13], backgroundColor:C.grayA, borderRadius:3 },
-      { label:'Asbestose', data:[2,2,3,3,3], backgroundColor:C.blueA, borderRadius:3 },
-      { label:'Pneum. Carvão', data:[1,1,1,1,1], backgroundColor:'rgba(50,50,50,0.6)', borderRadius:3 },
-      { label:'ODTS', data:[2,2,2,3,3], backgroundColor:C.amberA, borderRadius:3 }
-    ]
-  },
-  options: {
-    ...DEFAULTS,
-    scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true, stacked:true } }
-  }
-});
-mkLegend('legendPneumoTipo',[[C.gray,'Silicose 61%'],[C.blue,'Asbestose 16%'],['rgba(50,50,50,0.8)','Pneum. Carvão 9%'],[C.amber,'ODTS 14%']]);
-
-new Chart(document.getElementById('barPneumoIdade'), {
-  type: 'bar',
-  data: {
-    labels: IDADES,
-    datasets: [{ label:'Casos', data:[1,4,14,28,22,13],
-      backgroundColor:IDADES.map((_,i)=>`rgba(107,107,104,${0.3+i*0.12})`), borderRadius:3 }]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
-
-new Chart(document.getElementById('barPneumoSetor'), {
-  type: 'bar',
-  data: {
-    labels: ['Mineração','Ind. Cerâmica','Construção Civil','Ind. Cimento','Fundição','Outros'],
-    datasets: [{ label:'Casos', data:[28,18,14,10,7,5], backgroundColor:C.grayA, borderRadius:3 }]
-  },
-  options: { ...DEFAULTS, indexAxis:'y', scales: { x: axisDefaults(), y: axisDefaults() } }
-});
-
-new Chart(document.getElementById('linePneumo'), {
-  type: 'line',
-  data: {
-    labels: ANOS,
-    datasets: [
-      { label:'Notificadas', data:[15,16,17,17,18], borderColor:C.gray, backgroundColor:'rgba(107,107,104,0.1)', fill:true, tension:0.4, borderWidth:2, pointRadius:5 },
-      { label:'Estimativa real', data:[75,78,82,84,88], borderColor:C.red, backgroundColor:'rgba(194,59,59,0.05)', fill:true, tension:0.4, borderWidth:2, borderDash:[6,4], pointRadius:4 }
-    ]
-  },
-  options: { ...DEFAULTS, scales: { x: axisDefaults(), y: { ...axisDefaults(), beginAtZero:true } } }
-});
-</script>
-</body>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

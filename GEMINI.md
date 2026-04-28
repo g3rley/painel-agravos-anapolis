@@ -1,34 +1,47 @@
 # Project Context: Painel de Agravos Anápolis
 
-This document provides essential context and guidelines for interacting with the `painel-agravos-anapolis` project.
+This document provides essential context and guidelines for interacting with the `painel-agravos-anapolis` project, which has been refactored for scalability and modularity.
 
 ## Project Overview
-The project is an **epidemiological observatory** (Painel SINAN) focused on work-related health issues and underreporting in Anápolis-GO, Brazil, covering the period from 2020 to 2024. It is a single-page web application designed for a presentation at the UniEVANGÉLICA Medicine course.
+The project is an **epidemiological observatory** (Painel SINAN) for Anápolis-GO, Brazil (2020–2024). It is now structured as a modern modular web application using **Vite**.
 
 ### Core Technologies
-- **HTML5/CSS3**: Pure vanilla implementation for layout and styling.
-- **JavaScript**: Client-side logic for navigation and chart initialization.
-- **Chart.js (v4.4.1)**: Used for all data visualizations (line, bar, pie, doughnut, radar, and area charts).
-- **Google Fonts**: Uses 'DM Sans' and 'DM Mono'.
+- **Vite**: Build tool and development server.
+- **Chart.js (v4.4.1)**: Data visualization library (managed via npm).
+- **ES Modules (ESM)**: Used for modular JavaScript.
+- **Vanilla CSS & HTML5**: Core technologies for structure and styling.
 
 ### Architecture
-The project follows a **Single File Architecture**. All HTML structure, CSS styling, and JavaScript logic (including data and chart configurations) are contained within `index.html`. 
+The project is organized into logical modules:
+- `index.html`: Main entry point (HTML structure only).
+- `src/main.js`: Main JavaScript entry point, orchestrating imports and initialization.
+- `src/css/style.css`: Central design system and component styles.
+- `src/data/constants.js`: Hardcoded epidemiological data and design constants (colors, labels).
+- `src/js/navigation.js`: Logic for section switching and tab management.
+- `src/js/charts/`:
+    - `setup.js`: Chart.js registration and configuration.
+    - `utils.js`: Helper functions for legends and axis defaults.
 
 ## Building and Running
-As a static web project, there is no build or installation process required.
+The project now requires Node.js for development.
 
-- **Running Locally**: Open `index.html` directly in any modern web browser.
-- **Deployment**: Can be hosted on any static site hosting service (GitHub Pages, Vercel, Netlify) by serving the `index.html` file.
-- **Dependencies**: Loaded via CDN (Chart.js and Google Fonts). No `npm install` or local dependencies are managed.
+### Development
+1. Install dependencies: `npm install`
+2. Start dev server: `npm run dev`
+
+### Production
+1. Build for production: `npm run build`
+2. The output will be in the `dist/` directory.
 
 ## Development Conventions
-- **All-in-one File**: Maintain the pattern of keeping HTML, CSS, and JS in `index.html` unless a refactoring to a build system (like Vite or Webpack) is explicitly requested.
-- **Styling**: Uses CSS Variables (defined in `:root`) for a consistent design system (colors, spacing, radii).
-- **Data Visualization**: Charts are initialized in the `<script>` tag at the bottom of the file. Data for the charts is hardcoded as arrays within the script.
-- **Responsive Design**: The CSS includes media queries to ensure the dashboard is functional on mobile devices.
-- **Language**: The user interface and documentation are in **Portuguese (pt-BR)**.
+- **Modularity**: Always separate data from logic. New epidemiological data should be added to `src/data/constants.js`.
+- **Componentization**: If the dashboard grows, consider splitting `src/main.js` into smaller modules under `src/js/charts/` (e.g., `visaoGeral.js`, `acidentes.js`).
+- **CSS Variables**: Use the variables defined in `src/css/style.css` for any new styling to maintain visual consistency.
+- **Testing**: Before finalizing changes, verify that all charts render correctly and the navigation functions across all tabs.
 
 ## Key Files
-- `index.html`: The entire application (Structure, Styles, Logic, and Data).
-- `README.md`: Basic project introduction.
-- `LICENSE`: Project licensing terms.
+- `index.html`: The skeleton of the dashboard.
+- `src/main.js`: Application logic.
+- `src/css/style.css`: Stylesheet.
+- `src/data/constants.js`: The project's "database" (mock/estimated data).
+- `package.json`: Project configuration and dependencies.
